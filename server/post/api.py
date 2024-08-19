@@ -1,3 +1,4 @@
+from django.db.models import Count
 from django.shortcuts import get_object_or_404
 from ninja import Router, ModelSchema, Schema
 from pydantic import field_validator
@@ -25,11 +26,13 @@ class PostOut(ModelSchema):
 
     @staticmethod
     def resolve_comments_count(obj):
+        if hasattr(obj, "comments_count"):
+            return obj.comments_count
         return obj.comments.count()
 
 @router.get("/posts", response=list[PostOut])
 def post_list(request, title: str = None):
-    posts = Post.objects.all()
+    posts = Post.objects.annotate(comments_count=Count("comments"))
     if title:
         posts = posts.filter(title__icontains=title)
     return posts
