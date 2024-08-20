@@ -32,7 +32,7 @@ class PostOut(ModelSchema):
 
 @router.get("/posts", response=list[PostOut])
 def post_list(request, title: str = None):
-    posts = Post.objects.annotate(comments_count=Count("comments"))
+    posts = Post.objects.annotate(comments_count=Count("comments")).order_by("-created")
     if title:
         posts = posts.filter(title__icontains=title)
     return posts

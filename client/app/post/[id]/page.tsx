@@ -7,38 +7,8 @@ import { useFetch } from "@/app/(hooks)/useFetch";
 import React from "react";
 
 import TheCard from "@/app/(components)/TheCard";
+import PostComment from "@/app/(components)/PostComment";
 import { Comment, Post } from "@/app/(types)";
-
-const PostComments = React.memo(({ comments }: { comments: Comment[] }) => (
-  <div>
-    {comments.map((comment) => (
-      <div key={comment.id} className="mt-4 shadow-md p-3 bg-slate-200">
-        <div className="text-xs text-slate-500">{moment(comment.created).calendar()}</div>
-        <p className="mt-2">{comment.content}</p>
-      </div>
-    ))}
-  </div>
-));
-
-const AddCommentForm = React.memo(
-  ({ onSubmit, value, onChange }: { onSubmit: (event: React.FormEvent) => void; value: string; onChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void }) => (
-    <form onSubmit={onSubmit}>
-      <div>
-        <label htmlFor="content" className="text-base font-medium">Add comment</label>
-        <textarea
-          id="content"
-          className="w-full p-2 border border-gray-300 rounded"
-          placeholder="Interesting, but..."
-          value={value}
-          onChange={onChange}
-        />
-      </div>
-      <div className="flex justify-end w-full mt-2">
-        <button type="submit" className="px-4 py-3 bg-slate-600 text-white shadow-md rounded">Comment</button>
-      </div>
-    </form>
-  )
-);
 
 export default function Page({ params }: { params: { id: string } }) {
   const { data: post, loading: loadingPost, error: errorPost, fetch: fetchPost } = useFetch<Post>(`/api/posts/${params.id}`);
@@ -51,24 +21,24 @@ export default function Page({ params }: { params: { id: string } }) {
 
   const [newCommentContent, setNewCommentContent] = React.useState("");
 
-  const handleChange = React.useCallback((event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setNewCommentContent(event.target.value);
-  }, []);
-
-  const handleSubmit = React.useCallback(async (event: React.FormEvent) => {
+  const addComment = (async (event: React.FormEvent) => {
     event.preventDefault();
     await axios.post(`/api/posts/${params.id}/comments`, { content: newCommentContent });
+
     setNewCommentContent("");
     fetchPost();
     fetchComments();
-  }, [newCommentContent, fetchPost, fetchComments, params.id]);
+  });
 
   return (
     <>
-      {loadingPost && <p>Loading...</p>}
-      {errorPost && <p>{errorPost}</p>}
-
-      {post !== null && (
+      {loadingPost ? (
+        <p>Loading...</p>
+      
+      ) : errorPost ? (
+        <p>{errorPost}</p>
+      
+      ) : post !== null ? (
         <>
           <div className="flex justify-between">
             <div>
@@ -89,15 +59,47 @@ export default function Page({ params }: { params: { id: string } }) {
 
           <div className="mt-4">
             <TheCard>
-              <AddCommentForm onSubmit={handleSubmit} value={newCommentContent} onChange={handleChange} />
+              <form onSubmit={addComment}>
+                <div>
+                  <label htmlFor="content" className="text-base font-medium">Add comment</label>
+                  <textarea
+                    id="content"
+                    className="w-full p-2 border border-gray-300 rounded"
+                    placeholder="Interesting, but..."
+                    value={newCommentContent}
+                    onChange={(event) => setNewCommentContent(event.target.value)}
+                  />
+                </div>
+                <div className="flex justify-end w-full mt-2">
+                  <button type="submit" className="px-4 py-3 bg-slate-600 text-white shadow-md rounded">Comment</button>
+                </div>
+              </form>
 
-              {loadingComments && <p>Loading...</p>}
-              {errorComments && <p>{errorComments}</p>}
-              {comments?.length === 0 && <p>No comments yet</p>}
-              {comments !== null && <PostComments comments={comments} />}
+              {loadingComments ? (
+                <p>Loading...</p>
+              
+              ) : errorComments ? (
+                <p>{errorPost}</p>
+              
+              ) : comments?.length === 0 ? (
+                <p>No comments yet</p>
+              
+              ) : comments !== null ? (
+                comments.map((comment: Comment) => (
+                  <div key={comment.id} className="mt-4">
+                    <PostComment created={comment.created} content={comment.content} />
+                  </div>
+                ))
+
+              ) : (
+                <></>
+              )}
             </TheCard>
           </div>
         </>
+
+      ) : (
+        <></>
       )}
     </>
   );
