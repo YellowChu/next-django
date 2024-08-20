@@ -34,13 +34,7 @@ export default function Home() {
       </div>
 
       <div className="mt-8">
-        {loading ? (
-          <p>Loading...</p>
-
-        ) : error ? (
-          <p>{error}</p>
-
-        ) : data !== null ? (
+        {data !== null ? (
           data.map((post: Post) => (
             <div className="mb-4" key={post.id}>
               <TheCard>
@@ -58,6 +52,12 @@ export default function Home() {
             </div>
           ))
 
+        ) : error ? (
+          <p>{error}</p>
+
+        ) : loading ? (
+          <p>Loading...</p>
+        
         ) : (
           <></>
         )}

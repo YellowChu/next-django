@@ -52,14 +52,8 @@ export default function Page({ params }: { params: { id: string } }) {
   });
 
   return (
-    <>
-      {loadingPost ? (
-        <p>Loading...</p>
-      
-      ) : errorPost ? (
-        <p>{errorPost}</p>
-      
-      ) : post !== null ? (
+    <>      
+      { post !== null ? (
         <>
           <div className="flex justify-between">
             <div>
@@ -98,21 +92,21 @@ export default function Page({ params }: { params: { id: string } }) {
                 </div>
               </form>
 
-              {loadingComments ? (
-                <p>Loading...</p>
-              
-              ) : errorComments ? (
-                <p>{errorPost}</p>
-              
-              ) : comments?.length === 0 ? (
-                <p>No comments yet</p>
-              
-              ) : comments !== null ? (
+              {comments !== null && comments.length > 0 ? (
                 <PostComments
                   comments={comments}
                   replyToComment={replyToComment}
                   deleteComment={deleteComment}
                 />
+
+              ) : comments !== null && comments.length === 0 ? (
+                <p>No comments yet</p>
+
+              ) : errorComments ? (
+                <p>{errorComments}</p>
+
+              ) : loadingComments ? (
+                <p>Loading...</p>
 
               ) : (
                 <></>
@@ -121,6 +115,12 @@ export default function Page({ params }: { params: { id: string } }) {
           </div>
         </>
 
+      ) : errorPost ? (
+        <p>{errorPost}</p>
+      
+      ) : loadingPost ? (
+        <p>Loading...</p>
+      
       ) : (
         <></>
       )}
