@@ -2,15 +2,19 @@
 
 import axios from "@/app/(axios)";
 import moment from "moment";
+import React from "react";
+import { useRouter } from "next/navigation";
 
 import { useFetch } from "@/app/(hooks)/useFetch";
-import React from "react";
 
+import TheButton from "@/app/(components)/TheButton";
 import TheCard from "@/app/(components)/TheCard";
-import PostComment from "@/app/(components)/PostComment";
+import PostComments from "@/app/(components)/PostComments";
 import { Comment, Post } from "@/app/(types)";
 
 export default function Page({ params }: { params: { id: string } }) {
+  const router = useRouter();
+
   const { data: post, loading: loadingPost, error: errorPost, fetch: fetchPost } = useFetch<Post>(`/api/posts/${params.id}`);
   const { data: comments, loading: loadingComments, error: errorComments, fetch: fetchComments } = useFetch<Comment[]>(`/api/posts/${params.id}/comments`);
 
@@ -30,6 +34,23 @@ export default function Page({ params }: { params: { id: string } }) {
     fetchComments();
   });
 
+  const replyToComment = async (commentId: number, content: string) => {
+    await axios.post(`/api/posts/${params.id}/comments/${commentId}/reply`, { content });
+    fetchPost();
+    fetchComments();
+  }
+
+  const deleteComment = async (commentId: number) => {
+    await axios.delete(`/api/posts/${params.id}/comments/${commentId}`);
+    fetchPost();
+    fetchComments();
+  }
+
+  const deletePost = (async () => {
+    await axios.delete(`/api/posts/${params.id}`);
+    router.push("/");
+  });
+
   return (
     <>
       {loadingPost ? (
@@ -45,6 +66,8 @@ export default function Page({ params }: { params: { id: string } }) {
               <h1 className="text-2xl font-medium">{post.title}</h1>
               <div className="text-xs text-slate-500">{moment(post.created).calendar()}</div>
             </div>
+
+            <TheButton onClick={deletePost}>Delete post</TheButton>
           </div>
 
           <div className="mt-8">
@@ -71,7 +94,7 @@ export default function Page({ params }: { params: { id: string } }) {
                   />
                 </div>
                 <div className="flex justify-end w-full mt-2">
-                  <button type="submit" className="px-4 py-3 bg-slate-600 text-white shadow-md rounded">Comment</button>
+                  <TheButton type="submit">Comment</TheButton>
                 </div>
               </form>
 
@@ -85,11 +108,11 @@ export default function Page({ params }: { params: { id: string } }) {
                 <p>No comments yet</p>
               
               ) : comments !== null ? (
-                comments.map((comment: Comment) => (
-                  <div key={comment.id} className="mt-4">
-                    <PostComment created={comment.created} content={comment.content} />
-                  </div>
-                ))
+                <PostComments
+                  comments={comments}
+                  replyToComment={replyToComment}
+                  deleteComment={deleteComment}
+                />
 
               ) : (
                 <></>

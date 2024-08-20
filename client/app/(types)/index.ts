@@ -12,4 +12,5 @@ export interface Comment {
   created: string;
   updated: string;
   content: string;
+  replies: Comment[];
 }

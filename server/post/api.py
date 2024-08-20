@@ -64,16 +64,24 @@ def post_delete(request, post_id: int):
 class CommentIn(ModelSchema):
     class Meta:
         model = Comment
-        fields = ["content", "thread"]
+        fields = ["content"]
 
 class CommentOut(ModelSchema):
+    replies: list["CommentOut"] | None = None
+
     class Meta:
         model = Comment
         fields = ["id", "content", "post", "thread", "created", "updated"]
 
+    @staticmethod
+    def resolve_replies(obj):
+        if not obj.replies.exists():
+            return []
+        return [reply for reply in obj.replies.all()]
+
 @router.get("/posts/{post_id}/comments", response=list[CommentOut])
 def comment_list(request, post_id: int):
-    comments = Comment.objects.filter(post_id=post_id)
+    comments = Comment.objects.filter(post_id=post_id, thread=None).order_by("-created")
     return comments
 
 @router.get("/posts/{post_id}/comments/{comment_id}", response=CommentOut)
@@ -99,3 +107,8 @@ def comment_delete(request, post_id: int, comment_id: int):
     comment = get_object_or_404(Comment, post_id=post_id, id=comment_id)
     comment.delete()
     return 204
+
+@router.post("/posts/{post_id}/comments/{comment_id}/reply", response=CommentOut)
+def reply_create(request, post_id: int, comment_id: int, data: CommentIn):
+    comment = Comment.objects.create(post_id=post_id, thread_id=comment_id, **data.dict())
+    return comment

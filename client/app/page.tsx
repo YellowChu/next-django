@@ -1,5 +1,6 @@
 "use client";
 
+import axios from "@/app/(axios)";
 import React from "react";
 import moment from "moment";
 import Link from "next/link";
@@ -17,13 +18,18 @@ export default function Home() {
     fetch();
   }, []);
 
+  const addPost = async (title: string, content: string) => {
+    await axios.post("/api/posts", { title, content });
+    fetch();
+  };
+
   return (
     <>
       <h1 className="text-2xl font-medium">Posts</h1>
 
       <div className="mt-8">
         <TheCard>
-          <PostForm onSubmit={fetch} />
+          <PostForm onSubmit={addPost} />
         </TheCard>
       </div>
 

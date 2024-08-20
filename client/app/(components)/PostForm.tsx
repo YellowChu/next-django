@@ -1,20 +1,24 @@
 "use client";
 
-import axios from "@/app/(axios)";
 import React from "react";
 
-export default function PostForm({ onSubmit }: { onSubmit: () => void }) {
+import TheButton from "@/app/(components)/TheButton";
+
+export default function PostForm(
+  { onSubmit }: { onSubmit: (title: string, content: string) => void }
+) {
   const [title, setTitle] = React.useState("");
   const [content, setContent] = React.useState("");
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    await axios.post("/api/posts", { title, content });
-    onSubmit();
+    onSubmit(title, content);
+    setTitle("");
+    setContent("");
   };
 
   return (
-    <form>
+    <form onSubmit={handleSubmit}>
       <div>
         <label htmlFor="title" className="text-base font-medium">Title</label>
         <input
@@ -36,7 +40,7 @@ export default function PostForm({ onSubmit }: { onSubmit: () => void }) {
         />
       </div>
       <div className="flex justify-end w-full">
-        <button type="submit" className="px-4 py-3 bg-slate-600 text-white shadow-md rounded" onClick={handleSubmit}>Submit</button>
+        <TheButton type="submit">Submit</TheButton>
       </div>
     </form>
   );

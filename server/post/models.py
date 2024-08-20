@@ -19,8 +19,8 @@ class Comment(models.Model):
     updated = models.DateTimeField(auto_now=True)
 
     content = models.TextField()
-    post = models.ForeignKey(Post, related_name="comments",on_delete=models.CASCADE)
-    thread = models.ForeignKey("self", on_delete=models.CASCADE, null=True, blank=True)
+    post = models.ForeignKey(Post, related_name="comments", on_delete=models.CASCADE)
+    thread = models.ForeignKey("self", related_name="replies", on_delete=models.CASCADE, null=True, blank=True)
 
     class Meta:
         ordering = ["-created"]
