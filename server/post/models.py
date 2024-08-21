@@ -1,5 +1,7 @@
 from django.db import models
 
+MAX_COMMENTS_PER_POST = 5
+
 class Post(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)

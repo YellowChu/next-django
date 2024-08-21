@@ -1,5 +1,6 @@
 "use client";
 
+import { AxiosError } from "axios";
 import axios from "@/app/(axios)";
 import moment from "moment";
 import React from "react";
@@ -27,7 +28,15 @@ export default function Page({ params }: { params: { id: string } }) {
 
   const addComment = (async (event: React.FormEvent) => {
     event.preventDefault();
-    await axios.post(`/api/posts/${params.id}/comments`, { content: newCommentContent });
+    try {
+      await axios.post(`/api/posts/${params.id}/comments`, { content: newCommentContent });
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 400 && err.response?.data?.msg) {
+        alert(err.response.data.msg);
+      } else {
+        alert("An error occurred");
+      }
+    }
 
     setNewCommentContent("");
     fetchPost();
@@ -35,7 +44,16 @@ export default function Page({ params }: { params: { id: string } }) {
   });
 
   const replyToComment = async (commentId: number, content: string) => {
-    await axios.post(`/api/posts/${params.id}/comments/${commentId}/reply`, { content });
+    try {
+      await axios.post(`/api/posts/${params.id}/comments/${commentId}/reply`, { content });
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 400 && err.response?.data?.msg) {
+        alert(err.response.data.msg);
+      } else {
+        alert("An error occurred");
+      }
+    }
+
     fetchPost();
     fetchComments();
   }

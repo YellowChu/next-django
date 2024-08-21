@@ -4,6 +4,7 @@ from ninja import Router, ModelSchema, Schema
 from pydantic import field_validator
 
 from post.models import Post, Comment
+from post.decorators import max_comments
 
 router = Router()
 
@@ -89,7 +90,8 @@ def comment_detail(request, post_id: int, comment_id: int):
     comment = get_object_or_404(Comment, post_id=post_id, id=comment_id)
     return comment
 
-@router.post("/posts/{post_id}/comments", response=CommentOut)
+@router.post("/posts/{post_id}/comments", response={200: CommentOut, 400: dict})
+@max_comments()
 def comment_create(request, post_id: int, data: CommentIn):
     comment = Comment.objects.create(post_id=post_id, **data.dict())
     return comment
@@ -108,7 +110,8 @@ def comment_delete(request, post_id: int, comment_id: int):
     comment.delete()
     return 204
 
-@router.post("/posts/{post_id}/comments/{comment_id}/reply", response=CommentOut)
+@router.post("/posts/{post_id}/comments/{comment_id}/reply", response={200: CommentOut, 400: dict})
+@max_comments()
 def reply_create(request, post_id: int, comment_id: int, data: CommentIn):
     comment = Comment.objects.create(post_id=post_id, thread_id=comment_id, **data.dict())
     return comment
